@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5.5' fill='%231DA1F2'/%3E%3Crect x='10.5' y='3.6' width='9.6' height='7.3' rx='2.7' fill='none' stroke='%23fff' stroke-width='1.5' opacity='0.75'/%3E%3Cpath d='M3.4 12a3.7 3.7 0 0 1 3.7-3.7h6a3.7 3.7 0 0 1 3.7 3.7v2.3a3.7 3.7 0 0 1-3.7 3.7H9.5l-3.1 2.6c-.55.46-1.3.07-1.3-.64v-2.4A3.7 3.7 0 0 1 3.4 14.3z' fill='%23fff'/%3E%3Ccircle cx='7.4' cy='13.1' r='1.05' fill='%231DA1F2'/%3E%3Ccircle cx='10.25' cy='13.1' r='1.05' fill='%231DA1F2'/%3E%3Ccircle cx='13.1' cy='13.1' r='1.05' fill='%231DA1F2'/%3E%3C/svg%3E">
+<title>操作日志 · 智能交互平台</title>
+<link rel="stylesheet" href="./shared.css?v=cfb74aff">
+<link rel="prefetch" href="./audit.html"><link rel="prefetch" href="./dashboard.html"><link rel="prefetch" href="./home-router.html"><link rel="prefetch" href="./playground.html"><link rel="prefetch" href="./router.html"><link rel="prefetch" href="./trace.html">
+</head>
+<body class="has-side">
+<div class="page">
+  <div class="page-head"><div class="page-title">操作日志</div></div>
+  <div style="display:flex;align-items:center;margin-bottom:10px">
+    <span class="muted" id="auditCount"></span>
+    <div style="flex:1"></div>
+    <span id="actionSelMount"></span>
+    <input type="text" id="kwInput" placeholder="搜产品 / 组件 / 详情" style="width:200px;height:32px;padding:4px 12px" aria-label="搜索日志">
+    <button class="btn small" id="dlBtn"></button>
+  </div>
+  <div class="card" style="padding:0">
+    <div id="auditBox"></div>
+  </div>
+</div>
+
+<script>window.SIA_PLATFORM="router";</script>
+<script src="./mock_data.js?v=e305d851"></script>
+<script src="./mock_api.js?v=5ebc21e8"></script>
+<script src="./tokens.js?v=aba04afb"></script>
+<script src="./ui.js?v=63967988"></script>
+<script>
+UI.nav("audit");
+const { el } = UI;
+
+const ACTION_NAMES = {
+  card_create: "新建组件实例", card_update: "编辑组件实例",
+  card_publish: "发布配置", card_offline: "下线配置", card_delete: "删除配置",
+  card_rollback: "回滚配置", card_restore_draft: "载入历史版本为草稿", card_republish_same: "原样重新上线",
+  echo_toggle: "切换回显", policy_update: "更新路由规则", policy_rollback: "回滚路由规则",
+  model_register: "添加模型", model_status_change: "变更模型状态", model_set_default: "设默认兜底",
+  credential_delete: "删除凭证并暂停", export_csv: "导出明细", profile_rebuild: "生成路由效果",
+  brand_activate: "切换组件风格", brand_delete: "删除风格主题", label_review: "标签复核",
+  unmask_trace: "解除脱敏",
+  policy_create: "新增路由策略", policy_delete: "删除路由策略", policy_duplicate: "复制路由策略",
+  scene_add: "添加维度（已下线）", scene_delete: "删除维度（已下线）",
+  bank_question_delete: "删除数据集题目", bank_question_relabel: "更改题目维度",
+  bank_scene_replace: "替换维度数据集", apikey_create: "创建 API Key", apikey_delete: "删除 API Key",
+  ab_sampling_set: "调整 AB 采样率", ab_feedback: "偏好回流", dataset_reflow_import: "导入回流数据",
+  dataset_rollback: "回滚数据集版本", profile_evolve: "一键更新画像（已并入导入）",
+  migrate_flywheel_v5: "升级维度数据集", migrate_dataset_v5_2: "升级数据集版本化", migrate_trust_v5_1: "修正标准答案迁移",
+  judge_model_set: "配置 Judge 模型",
+  migrate_assistant_v2: "组件体系升级",
+  product_update: "更新产品配置", product_create: "添加产品", product_delete: "删除产品",
+  migrate_products_v23: "升级出包记录列",
+  migrate_components_v24: "组件扩容",
+  product_key_reset: "重置产品接入 Key",
+  migrate_assistant_v21: "升级展示类组件扩容", migrate_products_v22: "补种多产品示例",
+  policy_key_reset: "重置策略 API Key",
+  router_model_set: "配置智能路由模型", benchmark_score_set: "修正 benchmark 得分",
+  benchmark_score_reset: "恢复榜单得分", benchmark_refresh: "刷新榜单快照",
+  migrate_bench_v7: "升级智能路由方案",
+  dataset_cluster: "归类生成数据集", dataset_cluster_failed: "归类生成失败",
+  profile_generate: "生成模型画像", profile_generate_failed: "生成画像失败",
+  migrate_pool_v6: "升级 Query 池方案",
+  model_thinking: "切换思考模式", model_rename: "编辑模型", model_delete: "删除模型",
+  model_profile_data: "导入画像数据", bank_import: "导入数据集", bank_import_failed: "导入数据集失败",
+  bank_eval_pending: "评测回填", bank_staged_commit: "并入回流数据", bank_staged_discard: "移除回流数据",
+  brand_import: "导入风格主题", label_source_toggle: "切换信号源", card_refs_upgrade: "升级配置引用",
+  ab_create: "创建 AB 实验", ab_stop: "停止 AB 实验",
+};
+
+// 详情说人话：ID 换成名称、技术键翻译、纯内部字段隐藏
+const DETAIL_KEY_CN = { card_id: "组件", card_name: "组件", product: "产品", product_id: "产品",
+  name: "名称", version: "版本", brand: "主题", brand_file: "主题文件", count: "数量", rows: "行数",
+  note: "说明", cards: "组件数", presets_removed: "清理预置", 预置组件: "预置组件" };
+// 这些是实现细节，对使用者没有信息量
+const DETAIL_HIDE = new Set(["force", "refs", "products_reset", "added", "tenant_id", "actor"]);
+const nameMap = {};   // id -> 展示名（组件与产品共用）
+function idLabel(v) {
+  const id = String(v);
+  const nm = nameMap[id];
+  return nm ? `${nm}（${id.slice(0, 8)}）` : id.slice(0, 8);
+}
+function fmtDetail(d) {
+  if (!d || typeof d !== "object") return "";
+  // id 已能解析出名称时，同条里的 name 字段是重复信息
+  const idv = d.card_id || d.product_id;
+  const dup = idv && d.name && nameMap[String(idv)] === d.name;
+  return Object.entries(d)
+    .filter(([k]) => !DETAIL_HIDE.has(k) && !(dup && k === "name"))
+    .map(([k, v]) => {
+      const label = DETAIL_KEY_CN[k] || k;
+      if (k === "card_id" || k === "product_id") return `${label}=${idLabel(v)}`;
+      return `${label}=${typeof v === "object" ? JSON.stringify(v) : v}`;
+    }).join(" · ");
+}
+function fmtActor(a) { return !a || a === "system" || a === "seed" ? "系统" : a === "demo-admin" ? "张三" : a; }
+
+// 动作筛选只列本平台动作（组件 / 产品 / 主题 / 接入）；其余历史动作仍能正常显示名称，只是不进筛选
+const IA_ACTION_KEYS = [
+  "card_create", "card_update", "card_publish", "card_offline", "card_delete",
+  "card_rollback", "card_restore_draft", "card_republish_same", "echo_toggle",
+  "product_create", "product_update", "product_delete", "product_key_reset",
+  "brand_import", "brand_activate", "brand_delete",
+  "apikey_create", "apikey_delete", "export_csv",
+];
+document.getElementById("dlBtn").append(UI.icon("download", 14), "导出 CSV");
+document.getElementById("actionSelMount").appendChild(UI.fancySelect({
+  value: "", width: "170px",
+  options: [["", "全部动作"], ...IA_ACTION_KEYS.filter(k => ACTION_NAMES[k]).map(k => [k, ACTION_NAMES[k]])],
+  onChange: (v) => { fltAction = v; shown = 50; load(); },
+}));
+document.getElementById("kwInput").oninput = UI.debounce ? UI.debounce(() => {
+  fltKw = document.getElementById("kwInput").value; shown = 50; load();
+}, 250) : ((e) => { fltKw = e.target.value; shown = 50; load(); });
+let allAudit = [];
+let curFiltered = [];
+document.getElementById("dlBtn").onclick = () => {
+  // 导出跟随当前筛选：有筛选导出命中行，无筛选导出全部
+  const rows = (fltAction || fltKw.trim()) ? curFiltered : allAudit;
+  const lines = [["时间", "操作人", "动作", "详情"].join(",")];
+  rows.forEach(r => lines.push([
+    UI.fmtTs(r.ts), fmtActor(r.actor), ACTION_NAMES[r.action] || r.action,
+    JSON.stringify(fmtDetail(r.detail)),
+  ].join(",")));
+  const blob = new Blob(["\ufeff" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "操作日志.csv";
+  a.click();
+  URL.revokeObjectURL(a.href);
+  UI.toast(`已导出 ${rows.length} 条操作日志`);
+};
+let shown = 50;
+let fltAction = "";
+let fltKw = "";
+async function load() {
+  // 先补齐 id -> 名称映射，日志里的 UUID 才能显示成业务对象名
+  if (!Object.keys(nameMap).length) {
+    const [cs, ps] = await Promise.all([
+      UI.api("/api/cards").catch(() => ({ cards: [] })),
+      UI.api("/api/products").catch(() => ({ products: [] })),
+    ]);
+    (cs.cards || []).forEach(c => { nameMap[c.card_id] = c.name; });
+    (ps.products || []).forEach(p2 => { nameMap[p2.product_id] = p2.name; });
+  }
+  const { audit: raw } = await UI.api("/api/audit?limit=200");
+  allAudit = raw;
+  const kw = fltKw.trim().toLowerCase();
+  const audit = raw.filter(r =>
+    (!fltAction || r.action === fltAction) &&
+    (!kw || (fmtDetail(r.detail) + " " + (ACTION_NAMES[r.action] || r.action) + " " + fmtActor(r.actor)).toLowerCase().includes(kw)));
+  curFiltered = audit;
+  document.getElementById("auditCount").textContent = (fltAction || kw)
+    ? `命中 ${audit.length} 条 / 共 ${raw.length} 条` : `共 ${raw.length} 条（最近 200 条内）`;
+  const dl = document.getElementById("dlBtn");
+  dl.textContent = "";
+  dl.append(UI.icon("download", 14), (fltAction || kw) ? `导出当前筛选（${audit.length} 条）` : "导出 CSV");
+  const box = document.getElementById("auditBox");
+  box.innerHTML = "";
+  if (!audit.length) {
+    box.appendChild(el("div", { class: "empty-state" }, (fltAction || kw) ? [
+      el("div", { class: "empty-title" }, ["没有匹配的记录"]),
+      el("div", {}, ["换个动作类型或关键词再试。"]),
+    ] : [
+      el("div", { class: "empty-title" }, ["还没有审计记录"]),
+      el("div", {}, ["发布配置、调整策略等关键操作后会出现在这里"]),
+    ]));
+    return;
+  }
+  box.appendChild(el("table", { class: "data" }, [
+    el("thead", {}, [el("tr", {}, ["时间", "操作人", "动作", "对象与详情"].map(h => el("th", { class: h === "对象与详情" ? "w-main" : "" }, [h])))]),
+    el("tbody", {}, audit.slice(0, shown).map(r => el("tr", {}, [
+      el("td", { class: "num", style: "white-space:nowrap" }, [UI.fmtTs(r.ts)]),
+      el("td", {}, [fmtActor(r.actor)]),
+      el("td", {}, [ACTION_NAMES[r.action] || r.action]),
+      el("td", { class: "muted num w-main", style: "max-width:520px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap", title: fmtDetail(r.detail) }, [fmtDetail(r.detail)]),
+    ]))),
+  ]));
+  if (audit.length > shown) {
+    box.appendChild(el("div", { style: "text-align:center;padding:10px" }, [
+      el("button", { class: "btn small", onclick: () => { shown += 50; load(); } }, [`显示更多（还有 ${audit.length - shown} 条）`]),
+    ]));
+  }
+}
+load().catch(e => UI.toast("加载失败：" + e.message, true));
+</script>
+<script>if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js").catch(function(){});</script>
+</body>
+</html>

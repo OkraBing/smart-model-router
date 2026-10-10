@@ -1,0 +1,89 @@
+{
+  "brand_id": "default",
+  "brand_name": "默认风格 · 墨蓝",
+  "color": {
+    "primary": "#3E63DD",
+    "primary_weak": "#EDF2FE",
+    "bg_page": "#FFFFFF",
+    "bg_surface": "#F9FAFB",
+    "text_primary": "#1C2434",
+    "text_secondary": "#57627B",
+    "text_muted": "#8D96AA",
+    "border": "#E4E9F0",
+    "success": "#30A46C",
+    "warning": "#D6970A",
+    "danger": "#E5484D",
+    "accent": "#8E4EC6",
+    "ring": "#3E63DD",
+    "bg_elevated": "#FFFFFF",
+    "bg_sunken": "#EEF0F4"
+  },
+  "chart": {
+    "categorical": [
+      "#3E63DD",
+      "#0FA3A3",
+      "#8E4EC6",
+      "#EE7712",
+      "#D6409F",
+      "#6E4BD8",
+      "#B97A17",
+      "#E5484D"
+    ],
+    "sequential": [
+      "#dde5f8",
+      "#b9c8ef",
+      "#93aae5",
+      "#6d8cdb",
+      "#4a6ed1",
+      "#3b5fce",
+      "#2c479c"
+    ],
+    "diverging_positive": "#3b5fce",
+    "diverging_negative": "#d9453c",
+    "diverging_mid": "#eef0f4",
+    "grid": "#E8ECEF",
+    "axis": "#C7D0D8"
+  },
+  "radius": {
+    "card": "20px",
+    "control": "12px",
+    "chip": "999px"
+  },
+  "font": {
+    "family": "'Open Sans', 'Noto Sans SC', -apple-system, 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif",
+    "size_base": "14px",
+    "size_small": "12px",
+    "size_title": "16px",
+    "size_hero": "26px"
+  },
+  "spacing": {
+    "unit": "8px",
+    "card_padding": "16px",
+    "gap": "12px"
+  },
+  "density": "regular",
+  "motion": {
+    "duration_fast": "120ms",
+    "duration_base": "220ms"
+  },
+  "shape": {
+    "control_style": "rounded"
+  },
+  "color_dark": {
+    "primary": "#5472E4",
+    "primary_weak": "#202C55",
+    "accent": "#A06FE0",
+    "ring": "#5472E4",
+    "bg_page": "#101319",
+    "bg_surface": "#171B24",
+    "border": "#2A3140",
+    "text_primary": "#EDEFF5",
+    "text_secondary": "#A3ACC2",
+    "text_muted": "#6E7891",
+    "success": "#33B074",
+    "warning": "#E2A336",
+    "danger": "#EB6F76",
+    "bg_elevated": "#1B2130",
+    "bg_sunken": "#0C0F16"
+  }
+}
